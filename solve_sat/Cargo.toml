@@ -1,0 +1,9 @@
+[package]
+name = "solve_sat"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+either = {package="either", version="1.13.0"}
+utility = {path="../utility"}
+cdcl_engine = {path="../cdcl_engine"}

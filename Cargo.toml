@@ -1,0 +1,13 @@
+[workspace]
+#edition = "2024"
+resolver = "3"
+
+members = [
+    "cdcl_engine",
+    "utility",
+    "solve_sat",
+]
+
+[profile.dev]
+opt-level = 3
+lto = true

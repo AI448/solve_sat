@@ -145,13 +145,11 @@ impl TheoryTrait for ClauseTheory {
                 if !engine.is_assigned(another_watched_literal.index()) {
                     // もう一方の監視リテラルが未割り当てである場合には伝播が発生
                     // lbd を更新
-                    // if row.plbd > 1 {
-                    //     let plbd = self
-                    //         .calculate_plbd
-                    //         .calculate_clause_plbd(&ClauseView::new(row.literals.iter().cloned()), engine);
-                    //     debug_assert!(plbd >= 1);
-                    //     row.plbd = u32::min(row.plbd, plbd);
-                    // }
+                    if row.plbd > 1 {
+                        let plbd = self.calculate_plbd.calculate(row.literals.iter().cloned(), engine);
+                        debug_assert!(plbd >= 1);
+                        row.plbd = u32::min(row.plbd, plbd);
+                    }
                     row.activity += self.activity_increase_value;
                     // もう一方の監視リテラルに真を割り当て
                     let inner_result = engine.assign(another_watched_literal, Reason::Propagation {
@@ -182,12 +180,12 @@ impl TheoryTrait for ClauseTheory {
     }
 
     fn reduce_constraints(&mut self) {
-        let activity_threshold = f64::powf(
-            1.0 - 1.0 / self.activity_time_constant,
-            f64::max(self.activity_time_constant, self.time as f64 / 10.0),
-        );
         for row in self.rows.iter_mut() {
             row.activity /= self.activity_increase_value;
+            let activity_threshold = f64::powf(
+                1.0 - 1.0 / self.activity_time_constant,
+                f64::max(self.activity_time_constant, self.time as f64 / row.plbd as f64),
+            );
             if row.is_learnt && !row.deleted && row.activity <= activity_threshold {
                 row.deleted = true;
                 self.summary.number_of_clauses -= 1;

@@ -26,7 +26,6 @@ where
     assignment_orders: Array<u32, u32>,
     assignment_stack: Array<u32, Assignment<CompositeExplainKeyT>>,
     decision_stack: Array<u32, Decision>,
-    summary: CoreEngineSummary,
     backjump_result: Array<u32, Literal>,
 }
 
@@ -40,7 +39,6 @@ where
             assignment_orders: Array::default(),
             assignment_stack: Array::default(),
             decision_stack: Array::default(),
-            summary: CoreEngineSummary::default(),
             backjump_result: Array::default(),
         }
     }
@@ -193,7 +191,13 @@ where
     }
 
     fn summary(&self) -> Self::Summary {
-        return self.summary.clone();
+        return Self::Summary {
+            number_of_fixed_variables: if self.decision_stack.is_empty() {
+                self.assignment_stack.len()
+            } else {
+                self.decision_stack[0].assignment_order
+            },
+        };
     }
 }
 

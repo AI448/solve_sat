@@ -8,6 +8,7 @@ pub enum Boolean {
 
 impl Not for Boolean {
     type Output = Boolean;
+    #[inline(always)]
     fn not(self) -> Self::Output {
         match self {
             Self::FALSE => Self::TRUE,
@@ -17,6 +18,7 @@ impl Not for Boolean {
 }
 
 impl From<bool> for Boolean {
+    #[inline(always)]
     fn from(value: bool) -> Self {
         match value {
             false => Self::FALSE,
@@ -49,12 +51,14 @@ impl From<bool> for Boolean {
 
 impl<T> Index<Boolean> for [T; 2] {
     type Output = T;
+    #[inline(always)]
     fn index(&self, index: Boolean) -> &Self::Output {
         &self[index as usize]
     }
 }
 
 impl<T> IndexMut<Boolean> for [T; 2] {
+    #[inline(always)]
     fn index_mut(&mut self, index: Boolean) -> &mut Self::Output {
         &mut self[index as usize]
     }

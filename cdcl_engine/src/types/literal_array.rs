@@ -19,10 +19,12 @@ impl<ValueT: Clone> Clone for LiteralArray<ValueT> {
 }
 
 impl<ValueT> LiteralArray<ValueT> {
+    #[inline(always)]
     pub fn len(&self) -> u32 {
         self.array.len() / 2
     }
 
+    #[inline(always)]
     pub fn push(&mut self, value: [ValueT; 2]) {
         self.array.extend(value);
     }
@@ -40,12 +42,14 @@ impl<ValueT> LiteralArray<ValueT> {
 
 impl<ValueT> Index<Literal> for LiteralArray<ValueT> {
     type Output = ValueT;
+    #[inline(always)]
     fn index(&self, literal: Literal) -> &Self::Output {
         &self.array[literal.bits()]
     }
 }
 
 impl<ValueT> IndexMut<Literal> for LiteralArray<ValueT> {
+    #[inline(always)]
     fn index_mut(&mut self, literal: Literal) -> &mut Self::Output {
         &mut self.array[literal.bits()]
     }

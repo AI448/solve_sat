@@ -5,5 +5,6 @@ edition = "2024"
 
 [dependencies]
 either = {package="either", version="1.13.0"}
+statrs = {package="statrs", version="0.18.0"}
 utility = {path="../utility"}
 cdcl_engine = {path="../cdcl_engine"}

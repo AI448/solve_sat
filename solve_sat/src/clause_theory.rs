@@ -54,8 +54,7 @@ pub struct ClauseTheorySummary {
 struct Row {
     literals: Array<u32, Literal>,
     is_learnt: bool,
-    deleted: bool, // TODO 削除したスロットを再利用できるデータ構造はいずれ考える
-    generated_time_stamp: usize,
+    is_deleted: bool, // TODO 削除したスロットを再利用できるデータ構造はいずれ考える
     plbd: u32,
     activity: f64,
 }
@@ -74,7 +73,7 @@ pub struct ClauseTheory {
     watches: LiteralArray<Array<u32, Watch>>,
     time: usize,
     activity_increase_value: f64,
-    last_reduction_time_stamp: usize,
+    // last_reduction_time_stamp: usize,
     summary: ClauseTheorySummary,
 }
 
@@ -87,7 +86,7 @@ impl ClauseTheory {
             watches: LiteralArray::default(),
             time: 0,
             activity_increase_value: 1.0,
-            last_reduction_time_stamp: 0,
+            // last_reduction_time_stamp: 0,
             summary: ClauseTheorySummary::default(),
         }
     }
@@ -115,7 +114,7 @@ impl TheoryTrait for ClauseTheory {
             let watch = self.watches[assigned_literal][k];
             debug_assert!(watch.position == 0 || watch.position == 1);
             let row = &mut self.rows[watch.row_id];
-            if row.deleted {
+            if row.is_deleted {
                 // 節が削除されていれば監視も削除する
                 self.watches[assigned_literal].swap_remove(k);
                 continue;
@@ -182,14 +181,16 @@ impl TheoryTrait for ClauseTheory {
     fn reduce_constraints(&mut self) {
         for row in self.rows.iter_mut() {
             row.activity /= self.activity_increase_value;
-            let activity_threshold = f64::powf(
-                1.0 - 1.0 / self.activity_time_constant,
-                f64::max(self.activity_time_constant, self.time as f64 / row.plbd as f64),
-            );
-            if row.is_learnt && !row.deleted && row.activity <= activity_threshold {
-                row.deleted = true;
-                self.summary.number_of_clauses -= 1;
-                self.summary.number_of_learnt_clauses -= 1;
+            if row.is_learnt && !row.is_deleted {
+                let activity_threshold = f64::powf(
+                    1.0 - 1.0 / self.activity_time_constant,
+                    f64::max(self.activity_time_constant, 0.5 * self.time as f64 / row.plbd as f64),
+                );
+                if row.activity <= activity_threshold {
+                    row.is_deleted = true;
+                    self.summary.number_of_clauses -= 1;
+                    self.summary.number_of_learnt_clauses -= 1;
+                }
             }
         }
         self.activity_increase_value = 1.0;
@@ -245,8 +246,7 @@ where
             is_learnt: is_learnt,
             plbd: plbd,
             activity: self.activity_increase_value,
-            deleted: false,
-            generated_time_stamp: self.time,
+            is_deleted: false,
         });
         let row = self.rows.last().unwrap();
 
